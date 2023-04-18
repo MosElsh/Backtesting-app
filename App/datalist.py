@@ -9,13 +9,13 @@ class DataList:
         self.__all_data = data
         self.__new_data = []
 
-        self.__entry = tk.Entry(datalist_frame, relief="flat", background=theme.background, foreground=theme.foreground, highlightbackground=theme.border, highlightthickness=1, insertbackground=theme.foreground, width=width)
+        self.__entry = tk.Entry(datalist_frame, relief="flat", background=theme.background, foreground=theme.foreground, highlightbackground=theme.border, highlightthickness=1, insertbackground=theme.foreground, width=width, font=("tkDefaultFont", 14))
         self.__entry.bind("<KeyRelease>", lambda event: self.show_new_data())
         self.__entry.pack(fill="x")
 
-        self.__listbox = tk.Listbox(datalist_frame, relief="flat", background=theme.background, foreground=theme.foreground, highlightbackground=theme.border, highlightthickness=1, width=width)
+        self.__listbox = tk.Listbox(datalist_frame, relief="flat", background=theme.background, foreground=theme.foreground, highlightbackground=theme.border, highlightthickness=1, width=width, font=("tkDefaultFont", 14))
         self.__listbox.bind("<<ListboxSelect>>", lambda event: self.insert_selected_data())
-        self.__listbox.pack()
+        self.__listbox.pack(fill="x")
 
         self.show_new_data()
 
@@ -54,7 +54,7 @@ class DataList:
         if len(self.__entry.get()) != 0:
             self.get_new_list()
             self.__listbox.config(listvariable=tk.Variable(value=self.__new_data))
-            self.__listbox.pack()
+            self.__listbox.pack(fill="x")
         else:
             self.__listbox.pack_forget()
         return

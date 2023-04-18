@@ -85,6 +85,10 @@ IMAGES_THEME_COMBOS.append([theme_switcher_icon_default, theme_switcher_icon_alt
 
 
 
+# Create Space
+space_frame = tk.Frame(main_frame, background=theme.background)
+space_frame.pack(pady=20)
+
 
 #####       Content Frame Start        #####
 
@@ -92,6 +96,7 @@ IMAGES_THEME_COMBOS.append([theme_switcher_icon_default, theme_switcher_icon_alt
 # Content Frame
 content_frame = tk.Frame(main_frame, background=theme.background)
 content_frame.pack()
+content_frame.tkraise()
 
 
 # Symbol Frame
@@ -100,7 +105,7 @@ symbol_frame.pack()
 
 
 # Symbol Label
-symbol_label = tk.Label(symbol_frame, text="Symbol:", background=theme.background, foreground=theme.foreground)
+symbol_label = tk.Label(symbol_frame, text="Symbol:", background=theme.background, foreground=theme.foreground, font=("tkDefaultFont", 16))
 symbol_label.grid(row=0, column=0, sticky="n")
 
 
@@ -125,7 +130,7 @@ position_frame.pack()
 
 
 # Position Label
-position_label = tk.Label(position_frame, text="Position:", background=theme.background, foreground=theme.foreground)
+position_label = tk.Label(position_frame, text="Position:", background=theme.background, foreground=theme.foreground, font=("tkDefaultFont", 16))
 position_label.grid(row=0, column=0, sticky="n")
 
 
@@ -151,7 +156,7 @@ strategy_frame.pack()
 
 
 # Strategy Label 
-strategy_label = tk.Label(strategy_frame, text="Strategy: ", background=theme.background, foreground=theme.foreground)
+strategy_label = tk.Label(strategy_frame, text="Strategy: ", background=theme.background, foreground=theme.foreground, font=("tkDefaultFont", 16))
 strategy_label.grid(row=0, column=0, sticky="n")
 
 
