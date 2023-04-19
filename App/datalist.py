@@ -5,13 +5,21 @@ class DataList:
     """ Simulates a datalist in HTML. Requires a Frame and some data in the type list. """
 
 
-    def __init__(self, datalist_frame: tk.Frame, data: list, theme: Theme=Theme(), width=None, *args, **kwargs) -> None:
+    def __init__(self, datalist_frame: tk.Frame, data: list, theme: Theme=Theme(), width=None, arrow: tk.PhotoImage=None, *args, **kwargs) -> None:
         self.__all_data = data
         self.__new_data = []
 
-        self.__entry = tk.Entry(datalist_frame, relief="flat", background=theme.background, foreground=theme.foreground, highlightbackground=theme.border, highlightthickness=1, insertbackground=theme.foreground, width=width, font=("tkDefaultFont", 14))
+        entry_frame = tk.Frame(datalist_frame, background=theme.background, highlightbackground=theme.foreground, highlightthickness=1)
+        entry_frame.pack(fill="x")
+
+        self.__arrow_label = tk.Label(entry_frame, image=arrow, background=theme.background)
+        self.__arrow_label.grid(row=0, column=1)
+
+        self.__entry = tk.Entry(entry_frame, relief="flat", background=theme.background, foreground=theme.foreground, insertbackground=theme.foreground, width=width, font=("tkDefaultFont", 14))
         self.__entry.bind("<KeyRelease>", lambda event: self.show_new_data())
-        self.__entry.pack(fill="x")
+        self.__entry.grid(row=0, column=0)
+
+
 
         self.__listbox = tk.Listbox(datalist_frame, relief="flat", background=theme.background, foreground=theme.foreground, highlightbackground=theme.border, highlightthickness=1, width=width, font=("tkDefaultFont", 14))
         self.__listbox.bind("<<ListboxSelect>>", lambda event: self.insert_selected_data())
@@ -46,6 +54,10 @@ class DataList:
         self.__entry.insert("0", self.__listbox.get(self.__listbox.curselection()))
         self.__listbox.pack_forget()
         return
+
+
+    def return_arrow_label(self) -> tk.Label:
+        return self.__arrow_label
 
     
     def show_new_data(self) -> None:
