@@ -2,6 +2,16 @@ import tkinter as tk
 from styles import Theme
 
 
+def get_ticker_list() -> list[str]:
+    ticker_list = []
+    file = open("SPX Ticker List.csv", "r")
+    for line in file:
+        line = line.replace("\n", "")
+        ticker_list.append(line)
+    file.close()
+    return ticker_list
+
+
 def find_longest_value(data: list) -> int:
     highest = 0
     for value in data:
@@ -21,7 +31,7 @@ def list_all_widgets(widget: tk.Widget) -> list[tk.Widget]:
 
 
 def change_image_theme(image_label: tk.Label, theme: Theme, photo_image_combos: list[tk.Widget]) -> None:
-    """ Switch the logo between its dark and light theme because it' an image. """
+    """ Switch the icon from light theme to dark theme and vice versa. Requires the label that the icon is inside. Also requires the combination of icon themes in a list. """
 
     image_to_display = photo_image_combos[0]
     if image_label.cget("image") == photo_image_combos[0].name:

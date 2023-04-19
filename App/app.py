@@ -1,17 +1,15 @@
 import tkinter as tk
 
 from styles import Theme
-from functions import perform_theme_change, change_image_theme, find_longest_value
+from functions import perform_theme_change, change_image_theme, find_longest_value, get_ticker_list
 from datalist import DataList
 
-SYMBOLS = [x+1 for x in range(1000)]
+
+IMAGES_THEME_COMBOS = []
+SYMBOLS = get_ticker_list()
 POSITIONS = ["Long", "Short"]
 STRATEGIES = ["MA Crossover", "RSI overbought/oversold"]
 width = find_longest_value(SYMBOLS + POSITIONS + STRATEGIES)
-
-IMAGES_THEME_COMBOS = []
-
-
 theme = Theme()
 
 
@@ -20,6 +18,10 @@ app.geometry("600x600")
 app.config(background=theme.background)
 app.title("Back-Test Your Strategies")
 app.iconbitmap("Icons/icon.ico")
+
+
+arrow_icon_default = tk.PhotoImage(file="Icons/arrow-" + ("dark" if theme.get_dark() else "light") + "-theme.png")
+arrow_icon_alternate = tk.PhotoImage(file="Icons/arrow-" + ("dark" if not theme.get_dark() else "light") + "-theme.png")
 
 
 # Frame that covers the window.
@@ -115,8 +117,8 @@ symbol_datalist_frame.grid(row=0, column=1, sticky="n")
 
 
 # Symbol Datalist
-symbol_datalist = DataList(symbol_datalist_frame, [x+1 for x in range(1000)], theme, width)
-
+symbol_datalist = DataList(symbol_datalist_frame, SYMBOLS, theme, width, arrow_icon_default)
+IMAGES_THEME_COMBOS.append([arrow_icon_default, arrow_icon_alternate, symbol_datalist.return_arrow_label()])
 
 
 # Create Space
@@ -140,9 +142,8 @@ position_datalist_frame.grid(row=0, column=1, sticky="n")
 
 
 # Position Datalist
-position_datalist = DataList(position_datalist_frame, ["Long", "Short"], theme, width)
-
-
+position_datalist = DataList(position_datalist_frame, POSITIONS, theme, width, arrow_icon_default)
+IMAGES_THEME_COMBOS.append([arrow_icon_default, arrow_icon_alternate, position_datalist.return_arrow_label()])
 
 
 # Create Space
@@ -166,7 +167,11 @@ strategy_datalist_frame.grid(row=0, column=1, sticky="n")
 
 
 # Strategy Datalist
-strategy_datalist = DataList(strategy_datalist_frame, ["MA Crossover", "RSI overbought/oversold"], theme, width)
+strategy_datalist = DataList(strategy_datalist_frame, STRATEGIES, theme, width, arrow_icon_default)
+IMAGES_THEME_COMBOS.append([arrow_icon_default, arrow_icon_alternate, strategy_datalist.return_arrow_label()])
+
+
+#####       Content Frame End        #####
 
 
 app.mainloop()
