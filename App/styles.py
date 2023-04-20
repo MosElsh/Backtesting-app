@@ -1,14 +1,14 @@
-from packages import detect
+import detect
 
 
 # Load the correct library methods for detecting whether the user is using
 # A dark or light theme.
 if detect.windows:
-    from packages.darkdetect._windows_detect import isDark
+    from darkdetect._windows_detect import isDark
 elif detect.mac:
-    from packages.darkdetect._mac_detect import isDark
+    from darkdetect._mac_detect import isDark
 else:
-    from packages.darkdetect._linux_detect import isDark
+    from darkdetect._linux_detect import isDark
 
 
 

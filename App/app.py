@@ -1,5 +1,4 @@
 import tkinter as tk
-
 from styles import Theme
 from functions import perform_theme_change, change_image_theme, find_longest_value, get_ticker_list
 from datalist import DataList
@@ -8,7 +7,7 @@ from datalist import DataList
 IMAGES_THEME_COMBOS = []
 SYMBOLS = get_ticker_list()
 POSITIONS = ["Long", "Short"]
-STRATEGIES = ["MA Crossover", "RSI overbought/oversold"]
+STRATEGIES = ["MA Crossover", "RSI overbought/oversold", "Bollinger Bands"]
 width = find_longest_value(SYMBOLS + POSITIONS + STRATEGIES)
 theme = Theme()
 
