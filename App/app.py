@@ -1,19 +1,21 @@
 import tkinter as tk
+import tkinter.messagebox as mb
 from styles import Theme
-from functions import perform_theme_change, change_image_theme, find_longest_value, get_ticker_list
+from functions import perform_theme_change, change_image_theme, find_longest_value, get_ticker_list, process_backtest, strategy_list
 from datalist import DataList
+from strategy_parameters import StrategyParameters
 
 
 IMAGES_THEME_COMBOS = []
-SYMBOLS = get_ticker_list()
+SYMBOLS = get_ticker_list("SPX Ticker List.csv")
 POSITIONS = ["Long", "Short"]
-STRATEGIES = ["MA Crossover", "RSI overbought/oversold", "Bollinger Bands"]
+STRATEGIES = strategy_list()
 width = find_longest_value(SYMBOLS + POSITIONS + STRATEGIES)
 theme = Theme()
 
 
 app = tk.Tk()
-app.geometry("600x600")
+app.geometry("800x800")
 app.config(background=theme.background)
 app.title("Back-Test Your Strategies")
 app.iconbitmap("Icons/icon.ico")
@@ -81,7 +83,6 @@ IMAGES_THEME_COMBOS.append([theme_switcher_icon_default, theme_switcher_icon_alt
 
 
 
-
 #####       Header Frame End        #####
 
 
@@ -120,6 +121,15 @@ symbol_datalist = DataList(symbol_datalist_frame, SYMBOLS, theme, width, arrow_i
 IMAGES_THEME_COMBOS.append([arrow_icon_default, arrow_icon_alternate, symbol_datalist.return_arrow_label()])
 
 
+# Info Icon
+info_icon_default = tk.PhotoImage(file="Icons/info-" + ("dark" if theme.get_dark() else "light") + "-theme.png")
+info_icon_alternate = tk.PhotoImage(file="Icons/info-" + ("dark" if not theme.get_dark() else "light" + "-theme.png"))
+info_icon_label = tk.Label(symbol_frame, image=info_icon_default, background=theme.background, foreground=theme.foreground, cursor=theme.cursor)
+info_icon_label.grid(row=0, column=2, sticky="n", padx=5)
+info_icon_label.bind("<Button-1>", lambda event: mb.showinfo(title="Symbol Selection", message="Select a symbol to back-test your strategy on."))
+IMAGES_THEME_COMBOS.append([info_icon_default, info_icon_alternate, info_icon_label])
+
+
 # Create Space
 space_frame = tk.Frame(content_frame, background=theme.background)
 space_frame.pack(pady=10)
@@ -145,6 +155,15 @@ position_datalist = DataList(position_datalist_frame, POSITIONS, theme, width, a
 IMAGES_THEME_COMBOS.append([arrow_icon_default, arrow_icon_alternate, position_datalist.return_arrow_label()])
 
 
+# Info Icon
+info_icon_default = tk.PhotoImage(file="Icons/info-" + ("dark" if theme.get_dark() else "light") + "-theme.png")
+info_icon_alternate = tk.PhotoImage(file="Icons/info-" + ("dark" if not theme.get_dark() else "light" + "-theme.png"))
+info_icon_label = tk.Label(position_frame, image=info_icon_default, background=theme.background, foreground=theme.foreground, cursor=theme.cursor)
+info_icon_label.grid(row=0, column=2, sticky="n", padx=5)
+info_icon_label.bind("<Button-1>", lambda event: mb.showinfo(title="Select Position", message="Choose either long or short as your position entries for the back-test."))
+IMAGES_THEME_COMBOS.append([info_icon_default, info_icon_alternate, info_icon_label])
+
+
 # Create Space
 space_frame = tk.Frame(content_frame, background=theme.background)
 space_frame.pack(pady=10)
@@ -165,12 +184,63 @@ strategy_datalist_frame = tk.Frame(strategy_frame, background=theme.background)
 strategy_datalist_frame.grid(row=0, column=1, sticky="n")
 
 
+
+# Strategy Parameters Container (Not Displayed Yet)
+strategy_params_container = tk.Frame(content_frame, background=theme.background)
+strategy_params_container.pack(pady=10)
+tk.Frame(strategy_params_container, background=theme.background).pack()     # Empty initial frame as no strategy is chosen yet.
+
 # Strategy Datalist
 strategy_datalist = DataList(strategy_datalist_frame, STRATEGIES, theme, width, arrow_icon_default)
 IMAGES_THEME_COMBOS.append([arrow_icon_default, arrow_icon_alternate, strategy_datalist.return_arrow_label()])
+parameters = StrategyParameters()
+strategy_datalist.get_listbox().bind("<<ListboxSelect>>",
+    lambda event: [
+        strategy_params_container.winfo_children()[0].destroy(),
+        strategy_datalist.insert_selected_data(),
+        parameters.update_display(strategy_params_container, strategy_datalist.get_selected(), theme)
+    ]
+)
+
+# Info Icon
+info_icon_default = tk.PhotoImage(file="Icons/info-" + ("dark" if theme.get_dark() else "light") + "-theme.png")
+info_icon_alternate = tk.PhotoImage(file="Icons/info-" + ("dark" if not theme.get_dark() else "light" + "-theme.png"))
+info_icon_label = tk.Label(strategy_frame, image=info_icon_default, background=theme.background, foreground=theme.foreground, cursor=theme.cursor)
+info_icon_label.grid(row=0, column=2, sticky="n", padx=5)
+info_icon_label.bind("<Button-1>", lambda event: mb.showinfo(title="Choose A Strategy", message="Choose a strategy to back-test."))
+IMAGES_THEME_COMBOS.append([info_icon_default, info_icon_alternate, info_icon_label])
 
 
 #####       Content Frame End        #####
+
+
+
+#####       Back-Test Results Frame Start        #####
+
+
+backtest_results_container = tk.Frame(main_frame, background=theme.background)
+
+
+button_frame = tk.Frame(content_frame, background=theme.background, highlightbackground=theme.foreground, highlightthickness=1)
+button_frame.pack(pady=10)
+button = tk.Button(
+    button_frame,
+    text="Submit",
+    background=theme.background,
+    foreground=theme.foreground,
+    relief="flat",
+    font=("tkDefaultFont", 14),
+    activebackground=theme.foreground,
+    activeforeground=theme.background,
+    cursor=theme.cursor
+)
+button.bind("<Button-1>", lambda event: process_backtest(backtest_results_container, symbol_datalist.get_selected(), position_datalist.get_selected(), strategy_datalist.get_selected(), higher_value=parameters.get_higher_value(), lower_value=parameters.get_lower_value()))
+button.pack()
+
+
+backtest_results_container.pack()
+
+#####       Back-Test Results Frame End        #####
 
 
 app.mainloop()

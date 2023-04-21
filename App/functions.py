@@ -1,10 +1,14 @@
 import tkinter as tk
+import tkinter.messagebox as mb
 from styles import Theme
+from strategy import *
 
 
-def get_ticker_list() -> list[str]:
+def get_ticker_list(filename: str) -> list[str]:
+    """ Retrieve all the tickers within the CSV file. """
+
     ticker_list = []
-    file = open("SPX Ticker List.csv", "r")
+    file = open(filename, "r")
     for line in file:
         line = line.replace("\n", "")
         ticker_list.append(line)
@@ -12,7 +16,46 @@ def get_ticker_list() -> list[str]:
     return ticker_list
 
 
-def find_longest_value(data: list) -> int:
+def strategy_list() -> list[str]:
+    return ["MA Crossover", "RSI overbought/oversold", "Bollinger Bands"]
+
+
+def validate_positive_integer(num: int):
+    """ Check that a number is of type int and larger than 0. """
+    if not isinstance(num, int): return False
+    return num > 0
+
+
+def check_higher_lower_values_valid(lower_value: int, higher_value: int) -> bool:
+    """ Check that the smaller number is smaller than the larger number. """
+    return lower_value < higher_value
+
+
+def process_backtest(backtest_results_container: tk.Frame, ticker: str, position: str, strategy_name: str, **kwargs) -> None:
+    """ Carry out the backtest. Any strategy parameters are passed as keyword arguments. """
+
+    if ticker == "" or position == "" or strategy_name == "": mb.showwarning(title="Empty Inputs", message="There must not be any inputs. Please fill in all the inputs.")
+    elif position != "Long" and position != "Short": mb.showwarning(title="Invalid Position Chosen", message='Position must be "Long" or "Short".')
+    elif ticker not in get_ticker_list("SPX Ticker List.csv"): mb.showwarning(title="Invalid Ticker", message="Please choose a valid ticker.")
+    elif strategy_name not in strategy_list(): mb.showwarning(title="Invalid Strategy", message="Please choose a valid strategy.") 
+
+    if strategy_name != "Bollinger Bands":
+        if not check_higher_lower_values_valid(kwargs["lower_value"], kwargs["higher_value"]):
+            mb.showwarning(title="Invalid Parameters", message="Your parameters are invalid. Please check them before submitting.")
+            return
+
+        print("Higher Value:", kwargs['higher_value'])
+        print("Lower Value:", kwargs['lower_value'])
+
+    else:
+        print("Bollinger Bands!")
+        
+    return
+
+
+def find_longest_value(data: list[str]) -> int:
+    """ Find the value with the longest length in a list. """
+
     highest = 0
     for value in data:
         if len(str(value)) > highest:
@@ -61,6 +104,12 @@ def perform_theme_change(app: tk.Tk, theme: Theme) -> None:
 
         if "insertbackground" in widget.keys():
             widget.configure(insertbackground=theme.foreground)
+
+        if "activebackground" in widget.keys():
+            widget.configure(activebackground=theme.foreground)
+
+        if "activeforeground" in widget.keys():
+            widget.configure(activeforeground=theme.background)
     return
 
         

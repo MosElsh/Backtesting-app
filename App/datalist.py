@@ -8,6 +8,7 @@ class DataList:
     def __init__(self, datalist_frame: tk.Frame, data: list, theme: Theme=Theme(), width=None, arrow: tk.PhotoImage=None, *args, **kwargs) -> None:
         self.__all_data = data
         self.__new_data = []
+        self.__theme = theme
 
         entry_frame = tk.Frame(datalist_frame, background=theme.background, highlightbackground=theme.foreground, highlightthickness=1)
         entry_frame.pack(fill="x")
@@ -18,8 +19,6 @@ class DataList:
         self.__entry = tk.Entry(entry_frame, relief="flat", background=theme.background, foreground=theme.foreground, insertbackground=theme.foreground, width=width, font=("tkDefaultFont", 14))
         self.__entry.bind("<KeyRelease>", lambda event: self.show_new_data())
         self.__entry.grid(row=0, column=0)
-
-
 
         self.__listbox = tk.Listbox(datalist_frame, relief="flat", background=theme.background, foreground=theme.foreground, highlightbackground=theme.border, highlightthickness=1, width=width, font=("tkDefaultFont", 14))
         self.__listbox.bind("<<ListboxSelect>>", lambda event: self.insert_selected_data())
@@ -47,7 +46,7 @@ class DataList:
     def insert_selected_data(self) -> None:
         """ Insert the selected data from the listbox into the entry. """
 
-        if self.__listbox.curselection() == None:
+        if self.__listbox.curselection() == ():
             return
 
         self.__entry.delete("0", "end")
@@ -67,6 +66,12 @@ class DataList:
             self.get_new_list()
             self.__listbox.config(listvariable=tk.Variable(value=self.__new_data))
             self.__listbox.pack(fill="x")
+            for x in range(self.__listbox.size()):
+                self.__listbox.itemconfig(x, selectbackground=self.__theme.foreground, selectforeground=self.__theme.background)
         else:
             self.__listbox.pack_forget()
         return
+
+
+    def get_listbox(self) -> tk.Listbox:
+        return self.__listbox
