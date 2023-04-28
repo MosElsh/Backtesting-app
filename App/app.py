@@ -7,7 +7,7 @@ from strategy_parameters import StrategyParameters
 
 
 IMAGES_THEME_COMBOS = []
-SYMBOLS = get_ticker_list("SPX Ticker List.csv")
+SYMBOLS = sorted(get_ticker_list("SPX Ticker List.csv"))
 POSITIONS = ["Long", "Short"]
 STRATEGIES = strategy_list()
 width = find_longest_value(SYMBOLS + POSITIONS + STRATEGIES)
@@ -185,7 +185,7 @@ strategy_datalist_frame.grid(row=0, column=1, sticky="n")
 
 
 
-# Strategy Parameters Container (Not Displayed Yet)
+# Strategy Parameters Container (Not Displayed Until Strategy Chosen)
 strategy_params_container = tk.Frame(content_frame, background=theme.background)
 strategy_params_container.pack(pady=10)
 tk.Frame(strategy_params_container, background=theme.background).pack()     # Empty initial frame as no strategy is chosen yet.
@@ -219,6 +219,8 @@ IMAGES_THEME_COMBOS.append([info_icon_default, info_icon_alternate, info_icon_la
 
 
 backtest_results_container = tk.Frame(main_frame, background=theme.background)
+backtest_results_container.pack()
+tk.Frame(backtest_results_container, background=theme.background).pack() # Empty Frame that will get destroyed when a strategy is processed.
 
 
 button_frame = tk.Frame(content_frame, background=theme.background, highlightbackground=theme.foreground, highlightthickness=1)
@@ -234,11 +236,20 @@ button = tk.Button(
     activeforeground=theme.background,
     cursor=theme.cursor
 )
-button.bind("<Button-1>", lambda event: process_backtest(backtest_results_container, symbol_datalist.get_selected(), position_datalist.get_selected(), strategy_datalist.get_selected(), higher_value=parameters.get_higher_value(), lower_value=parameters.get_lower_value()))
+button.bind(
+    "<Button-1>",
+    lambda event: process_backtest(
+        backtest_results_container,
+        symbol_datalist.get_selected(),
+        position_datalist.get_selected(),
+        strategy_datalist.get_selected(),
+        higher_value=parameters.get_higher_value(),
+        lower_value=parameters.get_lower_value(),
+        theme=theme
+    )
+)
 button.pack()
 
-
-backtest_results_container.pack()
 
 #####       Back-Test Results Frame End        #####
 

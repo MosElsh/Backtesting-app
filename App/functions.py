@@ -31,24 +31,48 @@ def check_higher_lower_values_valid(lower_value: int, higher_value: int) -> bool
     return lower_value < higher_value
 
 
-def process_backtest(backtest_results_container: tk.Frame, ticker: str, position: str, strategy_name: str, **kwargs) -> None:
+def process_backtest(backtest_results_container: tk.Frame, ticker: str, position: str, strategy_name: str, theme: Theme, **kwargs) -> None:
     """ Carry out the backtest. Any strategy parameters are passed as keyword arguments. """
 
-    if ticker == "" or position == "" or strategy_name == "": mb.showwarning(title="Empty Inputs", message="There must not be any inputs. Please fill in all the inputs.")
+    backtest_results_container.winfo_children()[0].destroy()
+    
+    if ticker == "" or position == "" or strategy_name == "":
+        mb.showwarning(title="Empty Inputs", message="There must not be any inputs. Please fill in all the inputs.")
+        return
+
     elif position != "Long" and position != "Short": mb.showwarning(title="Invalid Position Chosen", message='Position must be "Long" or "Short".')
     elif ticker not in get_ticker_list("SPX Ticker List.csv"): mb.showwarning(title="Invalid Ticker", message="Please choose a valid ticker.")
     elif strategy_name not in strategy_list(): mb.showwarning(title="Invalid Strategy", message="Please choose a valid strategy.") 
 
-    if strategy_name != "Bollinger Bands":
+    if strategy_name == "MA Crossover":
         if not check_higher_lower_values_valid(kwargs["lower_value"], kwargs["higher_value"]):
             mb.showwarning(title="Invalid Parameters", message="Your parameters are invalid. Please check them before submitting.")
             return
 
-        print("Higher Value:", kwargs['higher_value'])
-        print("Lower Value:", kwargs['lower_value'])
+        s = MovingAverageCrossoverStrategy(ticker, position, kwargs["lower_value"], kwargs["higher_value"])
+        s.process_backtest()
+    elif strategy_name == "RSI overbought/oversold":
+        if not check_higher_lower_values_valid(kwargs["lower_value"], kwargs["higher_value"]):
+            mb.showwarning(title="Invalid Parameters", message="Your parameters are invalid. Please check them before submitting.")
+            return
 
-    else:
-        print("Bollinger Bands!")
+        print("RSI overbought/oversold strategy not complete")
+
+    elif strategy_name == "Bollinger Bands":
+        s = BollingerBandsStrategy(ticker, position)
+        s.process_backtest()
+
+    add_negative_symbol = "-" if s.get_profit() < 0 else ""
+    profit_display = s.get_profit() * -1 if s.get_profit() < 0 else s.get_profit()
+
+    results_frame = tk.Frame(backtest_results_container, background=theme.background)
+    results_frame.pack(pady=10)
+
+    pnl_label = tk.Label(results_frame, text="P/L: " + add_negative_symbol + "$" + str(round(profit_display, 2)), background=theme.background, foreground=theme.foreground, font=("tkDefaultFont", 16))
+    pnl_label.pack()
+
+    winning_percetange_label = tk.Label(results_frame, text=("Winning %: " + str(round(s.calculate_win_percentage(), 2))), background=theme.background, foreground=theme.foreground, font=("tkDefaultFont", 16))
+    winning_percetange_label.pack()
         
     return
 
@@ -111,5 +135,3 @@ def perform_theme_change(app: tk.Tk, theme: Theme) -> None:
         if "activeforeground" in widget.keys():
             widget.configure(activeforeground=theme.background)
     return
-
-        
