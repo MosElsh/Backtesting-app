@@ -36,7 +36,8 @@ class StrategyParameters(BaseStrategyParameters):
 
 
     def __init__(self) -> None:
-        pass
+        self.__higher_value = tk.IntVar()
+        self.__lower_value = tk.IntVar()
 
 
     def __MA_strategy_parameter_inputs(self, theme: Theme) -> None:
@@ -139,7 +140,6 @@ class StrategyParameters(BaseStrategyParameters):
 
     def __bollinger_bands_strategy_params_inputs(self) -> None:
         """ Bollinger Bands Strategy: No Parameters """
-        
         self.__higher_value = tk.IntVar()
         self.__lower_value = tk.IntVar()
 
