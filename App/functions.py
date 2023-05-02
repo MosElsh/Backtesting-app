@@ -17,7 +17,7 @@ def get_ticker_list(filename: str) -> list[str]:
 
 
 def strategy_list() -> list[str]:
-    return ["MA Crossover", "RSI overbought/oversold", "Bollinger Bands"]
+    return ["MA Crossover", "RSI Overbought Oversold", "Bollinger Bands"]
 
 
 def validate_positive_integer(num: int):
@@ -33,16 +33,14 @@ def check_higher_lower_values_valid(lower_value: int, higher_value: int) -> bool
 
 def process_backtest(backtest_results_container: tk.Frame, ticker: str, position: str, strategy_name: str, theme: Theme, **kwargs) -> None:
     """ Carry out the backtest. Any strategy parameters are passed as keyword arguments. """
-
-    backtest_results_container.winfo_children()[0].destroy()
     
     if ticker == "" or position == "" or strategy_name == "":
         mb.showwarning(title="Empty Inputs", message="There must not be any inputs. Please fill in all the inputs.")
         return
 
-    elif position != "Long" and position != "Short": mb.showwarning(title="Invalid Position Chosen", message='Position must be "Long" or "Short".')
-    elif ticker not in get_ticker_list("SPX Ticker List.csv"): mb.showwarning(title="Invalid Ticker", message="Please choose a valid ticker.")
-    elif strategy_name not in strategy_list(): mb.showwarning(title="Invalid Strategy", message="Please choose a valid strategy.") 
+    elif position != "Long" and position != "Short": return mb.showwarning(title="Invalid Position Chosen", message='Position must be "Long" or "Short".')
+    elif ticker not in get_ticker_list("SPX Ticker List.csv"): return mb.showwarning(title="Invalid Ticker", message="Please choose a valid ticker.")
+    elif strategy_name not in strategy_list(): return mb.showwarning(title="Invalid Strategy", message="Please choose a valid strategy.")
 
     if strategy_name == "MA Crossover":
         if not check_higher_lower_values_valid(kwargs["lower_value"], kwargs["higher_value"]):
@@ -51,16 +49,20 @@ def process_backtest(backtest_results_container: tk.Frame, ticker: str, position
 
         s = MovingAverageCrossoverStrategy(ticker, position, kwargs["lower_value"], kwargs["higher_value"])
         s.process_backtest()
-    elif strategy_name == "RSI overbought/oversold":
+
+    elif strategy_name == "RSI Overbought Oversold":
         if not check_higher_lower_values_valid(kwargs["lower_value"], kwargs["higher_value"]):
             mb.showwarning(title="Invalid Parameters", message="Your parameters are invalid. Please check them before submitting.")
             return
 
-        print("RSI overbought/oversold strategy not complete")
+        s = RSI_OverboughtOversoldStrategy(ticker, position, kwargs["lower_value"], kwargs["higher_value"])
+        s.process_backtest()
 
     elif strategy_name == "Bollinger Bands":
         s = BollingerBandsStrategy(ticker, position)
         s.process_backtest()
+
+    backtest_results_container.winfo_children()[0].destroy()
 
     add_negative_symbol = "-" if s.get_profit() < 0 else ""
     profit_display = s.get_profit() * -1 if s.get_profit() < 0 else s.get_profit()

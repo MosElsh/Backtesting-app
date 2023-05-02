@@ -159,7 +159,7 @@ class StrategyParameters(BaseStrategyParameters):
         self.__params_frame.pack(pady=10)
 
         if strategy_name == "MA Crossover": self.__MA_strategy_parameter_inputs(theme)
-        elif strategy_name == "RSI overbought/oversold": self.__RSI_strategy_params_inputs(theme)            
+        elif strategy_name == "RSI Overbought Oversold": self.__RSI_strategy_params_inputs(theme)            
         elif strategy_name == "Bollinger Bands": self.__bollinger_bands_strategy_params_inputs()
         else: mb.showwarning(title="Unidentified Strategy", message="This strategy does not exist here just yet. Please choose a strategy from the list.")
         return

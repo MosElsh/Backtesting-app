@@ -170,11 +170,11 @@ class Strategy(BaseStrategy):
         return
 
 
-    def test_long(self) -> None:
+    def test_long(self, data: pd.DataFrame) -> None:
         return
 
 
-    def test_short(self) -> None:
+    def test_short(self, data: pd.DataFrame) -> None:
         return
 
 
@@ -377,11 +377,17 @@ class RSI_OverboughtOversoldStrategy(Strategy):
     
     These levels must be passed in as integers."""
 
+    # Calculation:
+    # Average up = A mean of a 14 day rolling average of all up days.
+    # Average down = A mean of a 14 day rolling average of all down days.
+    # Relative Strength = Average up / Average down
+    # RSI = (100 * Average up) / (Average up + Average down)
+
 
     def __init__(self, ticker: str, position: str, oversold_level: int, overbought_level: int) -> None:
         self.set_ticker(ticker)
         self.set_position_type(position)
-        self.set_strategy("RSI overbought/oversold")
+        self.set_strategy("RSI Overbought Oversold")
         self.set_profit(0)
         self.set_wins(0)
         self.set_losses(0)
@@ -391,15 +397,139 @@ class RSI_OverboughtOversoldStrategy(Strategy):
 
 
     def setup_data(self) -> pd.DataFrame:
-        return
+        data = yf.Ticker(self.get_ticker()).history(period="max", interval="1d")
+
+        # Gather all differences between close prices.
+        change = data['Close'].diff()
+        change.dropna(inplace=True)
+
+        up_days = change.copy()
+        down_days = change.copy()
+
+        up_days[up_days < 0] = 0 # Set all the down days to 0 to get all the up days.
+        down_days[down_days > 0] = 0 # Set all the up days to 0 to get the down days.
+
+        avg_up = up_days.rolling(14).mean() # Get the average of the up days.
+        avg_down = down_days.rolling(14).mean().abs() # Get the average of the down days (get only the numerical value, not the signage).
+
+        rsi = (100 * avg_up) / (avg_up + avg_down)
+
+        data['RSI'] = rsi
+        data.dropna(inplace=True)
+        return data
 
 
-    def test_long(self) -> None:
-        return
+    def test_long(self, data: pd.DataFrame) -> None:
+        date_open = ""
+        date_close = ""
+        entry_price = 0
+        exit_price = 0
+        position_open = False
+        total_profit = 0
+        trade_profit = 0
+        trade_count = 0
+
+        for count in range(1, len(data) - 1):
+            if data['RSI'][count-1] < 30 and data['RSI'][count] > 30 and position_open == False:
+                # Open Long Position
+                position_open = True
+                entry_price = data['Open'][count+1]
+                date_open = data.index[count+1]
+                trade_count += 1
+
+                print()
+                print("Open Long Position")
+                print("Entry Price:", entry_price)
+                print("Entry Date:", date_open)
+
+            elif data['RSI'][count] > 70 and position_open == True:
+                # Close Long Position
+                position_open = False
+                exit_price = data['Open'][count+1]
+                date_close = data.index[count+1]
+                trade_profit = exit_price - entry_price
+                self.set_profit(self.get_profit() + trade_profit)
+
+                if self.check_trade_result(trade_profit) == 1: self.set_wins(self.get_wins() + 1)
+                else: self.set_losses(self.get_losses() + 1)
+
+                print("Close Long Position")
+                print("Exit Price:", exit_price)
+                print("Exit Date:", date_close)
+                print("Trade Profit:", trade_profit)
+                print()
+
+                self.file.write(str(trade_count) + "," + str(date_open) + "," + str(date_close) + "," + self.get_position_type() + "," + str(entry_price) + "," + str(exit_price) + "," + str(trade_profit) + "\n")
+
+        # Close last trade if it was open.
+        if position_open == True:
+            position_open = False
+            exit_price = data['Open'][count+1]
+            date_close = data.index[count+1]
+            trade_profit = exit_price - entry_price
+            total_profit += trade_profit
+
+            print("Close Long Position")
+            print("Exit Price:", exit_price)
+            print("Exit Date:", date_close)
+            print("Trade Profit:", trade_profit)
+            print()
 
 
-    def test_short(self) -> None:
-        return
+    def test_short(self, data: pd.DataFrame) -> None:
+        date_open = ""
+        date_close = ""
+        entry_price = 0
+        exit_price = 0
+        position_open = False
+        total_profit = 0
+        trade_profit = 0
+        trade_count = 0
+
+        for count in range(1, len(data) - 1):
+            if data['RSI'][count-1] > 70 and data['RSI'][count] < 70 and position_open == True:
+                # Close Short Position
+                position_open = False
+                exit_price = data['Open'][count+1]
+                date_close = data.index[count+1]
+                trade_profit = entry_price - exit_price
+                self.set_profit(self.get_profit() + trade_profit)
+
+                if self.check_trade_result(trade_profit) == 1: self.set_wins(self.get_wins() + 1)
+                else: self.set_losses(self.get_losses() + 1)
+                
+                print("Close Short Position")
+                print("Entry Price:", exit_price)
+                print("Entry Date:", date_close)
+                print("Trade Profit:", trade_profit)
+                print()
+
+                self.file.write(str(trade_count) + "," + str(date_open) + "," + str(date_close) + "," + self.get_position_type() + "," + str(entry_price) + "," + str(exit_price) + "," + str(trade_profit) + "\n")
+
+            elif data['RSI'][count] < 30 and position_open == False:
+                # Open Short Position
+                position_open = True
+                entry_price = data['Open'][count+1]
+                date_open = data.index[count+1]
+
+                print()
+                print("Open Short Position")
+                print("Exit Price:", entry_price)
+                print("Exit Date:", date_open)
+
+        # Close last trade if it was open.
+        if position_open == True:
+            position_open = False
+            exit_price = data['Open'][count+1]
+            exit_date = data.index[count+1]
+            trade_profit = exit_price - entry_price
+            total_profit += trade_profit
+
+            print("Close Long Position")
+            print("Exit Price:", exit_price)
+            print("Exit Date:", exit_date)
+            print("Trade Profit:", trade_profit)
+            print()
 
 
     
@@ -407,6 +537,10 @@ class BollingerBandsStrategy(Strategy):
     """ Back-Test a Bollinger Bands strategy.
     
     A long is entered when the price touches the lower band and a short is entered when the price touches the upper band.  """
+
+    # Calculation:
+    # Upper Band = 2 Standard Deviations above the 20 Period Moving Average.
+    # Lower Band = 2 Standard Deviations below the 20 Period Moving Average.
 
 
     def __init__(self, ticker: str, position: str) -> None:
@@ -441,7 +575,7 @@ class BollingerBandsStrategy(Strategy):
         trade_profit = 0
         position_open = False
 
-        for count in range(len(data) - 1):
+        for count in range(1, len(data) - 1):
             if position_open == False and data['Close'][count-1] < data['Lower Band'][count-1] and data['Close'][count] > data['Lower Band'][count]:
                 # Open Long Position
                 position_open = True
