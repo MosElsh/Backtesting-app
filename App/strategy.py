@@ -4,6 +4,10 @@ from uuid import uuid4
 import pandas as pd
 import yfinance as yf
 
+# TODO - MACD Strategy
+# TODO - Channel Breakout Strategy
+
+
 class BaseStrategy(ABC):
     """ An abstract class defining the methods needed for a strategy. """
 
