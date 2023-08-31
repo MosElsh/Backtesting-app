@@ -140,6 +140,7 @@ class StrategyParameters(BaseStrategyParameters):
 
     def __bollinger_bands_strategy_params_inputs(self) -> None:
         """ Bollinger Bands Strategy: No Parameters """
+        
         self.__higher_value = tk.IntVar()
         self.__lower_value = tk.IntVar()
 
