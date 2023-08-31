@@ -165,10 +165,10 @@ class Strategy(BaseStrategy):
         print(f"Strategy: {self.get_strategy()}")
         print("Ticker:", self.get_ticker())
         print("Position:", self.get_position_type())
-        print("Profit:", self.get_profit())
+        print("Profit:", round(self.get_profit(), 2))
         print("Wins:", self.get_wins())
         print("Losses:", self.get_losses())
-        print("Winning %:", self.calculate_win_percentage())
+        print("Winning %:", round(self.calculate_win_percentage(), 2))
 
         mb.showinfo(title="Back-Test Complete", message="The back-test has been completed. A CSV file has been saved logging all trades.")
         return
@@ -275,6 +275,9 @@ class MovingAverageCrossoverStrategy(Strategy):
         data[str(self.__short_MA) + " Moving Average"] = data["Close"].rolling(self.__short_MA).mean()
         data[str(self.__long_MA) + " Moving Average"] = data['Close'].rolling(self.__long_MA).mean()
         data.dropna(inplace=True)
+
+        data['Entry'] = data['Close'].map(lambda x: False)
+        data['Exit'] = data['Close'].map(lambda x: False)
         return data
 
 
@@ -296,6 +299,8 @@ class MovingAverageCrossoverStrategy(Strategy):
                 position_open = False
                 self.set_profit(self.get_profit() + trade_profit)
 
+                
+
                 print("Profit:", trade_profit)
                 print("Date Close:", date_close)
                 print()
@@ -311,6 +316,9 @@ class MovingAverageCrossoverStrategy(Strategy):
                 entry_price = round(data['Open'][count+1], 2)
                 position_open = True
                 trade_count += 1
+
+                data['Entry'][count] = True
+
                 print()
                 print("Trade Number:", trade_count)
                 print("Date Open:", date_open)
@@ -321,6 +329,8 @@ class MovingAverageCrossoverStrategy(Strategy):
             trade_profit = exit_price - entry_price
             self.set_profit(self.get_profit() + (trade_profit))
             position_open = False
+
+        print(data)
             
         return
 
@@ -342,6 +352,8 @@ class MovingAverageCrossoverStrategy(Strategy):
                 entry_price = data['Open'][count+1]
                 position_open = True
 
+                data['Entry'][count] = True
+
                 print()
                 print("Date Open:", data.index[count+1])
                 print("Trade Number:", trade_count)
@@ -354,6 +366,8 @@ class MovingAverageCrossoverStrategy(Strategy):
                 trade_profit = entry_price - exit_price
                 position_open = False
                 self.set_profit(self.get_profit() + (trade_profit))
+
+                data['Exit'][count] = True
 
                 print("Date Closed:", data.index[count+1])
                 print("Trade Profit:", trade_profit)
@@ -420,6 +434,9 @@ class RSI_OverboughtOversoldStrategy(Strategy):
 
         data['RSI'] = rsi
         data.dropna(inplace=True)
+
+        data['Entry'] = data['Close'].map(lambda x: False)
+        data['Exit'] = data['Close'].map(lambda x: False)
         return data
 
 
@@ -441,6 +458,8 @@ class RSI_OverboughtOversoldStrategy(Strategy):
                 date_open = data.index[count+1]
                 trade_count += 1
 
+                data['Entry'][count] = True
+
                 print()
                 print("Open Long Position")
                 print("Entry Price:", entry_price)
@@ -456,6 +475,8 @@ class RSI_OverboughtOversoldStrategy(Strategy):
 
                 if self.check_trade_result(trade_profit) == 1: self.set_wins(self.get_wins() + 1)
                 else: self.set_losses(self.get_losses() + 1)
+
+                data['Exit'][count] = True
 
                 print("Close Long Position")
                 print("Exit Price:", exit_price)
@@ -479,6 +500,8 @@ class RSI_OverboughtOversoldStrategy(Strategy):
             print("Trade Profit:", trade_profit)
             print()
 
+        return
+
 
     def test_short(self, data: pd.DataFrame) -> None:
         date_open = ""
@@ -501,6 +524,8 @@ class RSI_OverboughtOversoldStrategy(Strategy):
 
                 if self.check_trade_result(trade_profit) == 1: self.set_wins(self.get_wins() + 1)
                 else: self.set_losses(self.get_losses() + 1)
+
+                data['Exit'][count] = True
                 
                 print("Close Short Position")
                 print("Entry Price:", exit_price)
@@ -515,6 +540,8 @@ class RSI_OverboughtOversoldStrategy(Strategy):
                 position_open = True
                 entry_price = data['Open'][count+1]
                 date_open = data.index[count+1]
+
+                data['Entry'][count] = True
 
                 print()
                 print("Open Short Position")
@@ -534,6 +561,8 @@ class RSI_OverboughtOversoldStrategy(Strategy):
             print("Exit Date:", exit_date)
             print("Trade Profit:", trade_profit)
             print()
+
+        return
 
 
     
@@ -565,8 +594,10 @@ class BollingerBandsStrategy(Strategy):
         rate = data['Close'].rolling(20).std()
         data['Upper Band'] = data["20 Moving Average"] + (2 * rate)
         data['Lower Band'] = data["20 Moving Average"] - (2 * rate)
-
         data.dropna(inplace=True)
+
+        data['Entry'] = data['Close'].map(lambda x: False)
+        data['Exit'] = data['Close'].map(lambda x: False)
         return data
 
 
@@ -587,6 +618,8 @@ class BollingerBandsStrategy(Strategy):
                 date_open = data.index[count+1]
                 trade_count += 1
 
+                data['Entry'][count] = True
+
                 print()
                 print("Hit Lower Band")
                 print("Entry Price:", entry_price)
@@ -604,6 +637,8 @@ class BollingerBandsStrategy(Strategy):
                 else: self.set_losses(self.get_losses() + 1)
 
                 self.file.write(str(trade_count) + "," + str(date_open) + "," + str(date_close) + "," + self.get_position_type() + "," + str(entry_price) + "," + str(exit_price) + "," + str(trade_profit) + "\n")
+
+                data['Exit'][count] = True
 
                 print("Hit Upper Band")
                 print("Exit Price:", exit_price)
@@ -645,6 +680,8 @@ class BollingerBandsStrategy(Strategy):
                 date_open = data.index[count+1]
                 trade_count += 1
 
+                data['Entry'][count] = True
+
                 print()
                 print("Hit Upper Band")
                 print("Entry Price:", entry_price)
@@ -662,6 +699,8 @@ class BollingerBandsStrategy(Strategy):
                 else: self.set_losses(self.get_losses() + 1)
 
                 self.file.write(str(trade_count) + "," + str(date_open) + "," + str(date_close) + "," + self.get_position_type() + "," + str(entry_price) + "," + str(exit_price) + "," + str(trade_profit) + "\n")
+
+                data['Exit'][count] = True
 
                 print("Hit Lower Band")
                 print("Exit Price:", exit_price)
