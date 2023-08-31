@@ -18,7 +18,6 @@ app = tk.Tk()
 app.geometry("800x800")
 app.config(background=theme.background)
 app.title("Back-Test Your Strategies")
-app.iconbitmap("Icons/icon.ico")
 
 
 arrow_icon_default = tk.PhotoImage(file="Icons/arrow-" + ("dark" if theme.get_dark() else "light") + "-theme.png")
