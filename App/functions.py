@@ -35,7 +35,7 @@ def process_backtest(backtest_results_container: tk.Frame, ticker: str, position
     """ Carry out the backtest. Any strategy parameters are passed as keyword arguments. """
     
     if ticker == "" or position == "" or strategy_name == "":
-        mb.showwarning(title="Empty Inputs", message="There must not be any inputs. Please fill in all the inputs.")
+        mb.showwarning(title="Empty Inputs", message="Please fill in all the inputs.")
         return
 
     elif position != "Long" and position != "Short": return mb.showwarning(title="Invalid Position Chosen", message='Position must be "Long" or "Short".')
