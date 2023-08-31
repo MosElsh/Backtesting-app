@@ -17,7 +17,7 @@ class Theme:
 
     def __init__(self, *args, **kwargs) -> None:
         self.__dark = isDark()
-        self.cursor = 'pointinghand' if detect.mac else '@Windows_Hand.cur'
+        self.cursor = '' # Needs updating to account for Linux systems.
         self.set_theme_colours()
 
 
